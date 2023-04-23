@@ -75,11 +75,24 @@ def main():
         if command == 'get_companies':
             db.get_companies_and_vacancies_count()
 
-        command = input('Введите команду:\n'
-                        'exit - завершить программу\n'
-                        'update - обновить вакансии\n'
+        if command == 'average_salary':
+            db.get_avg_salary()
+
+        if command == 'higher_salary':
+            db.get_vacancies_with_higher_salary()
+
+        if command == 'vacancies_keyword':
+            word: str = input('Введите слово, по которому будет произведен поиск вакансий:')
+            db.get_vacancies_with_keyword(word)
+
+        command = input('Команды для работы с программой:\n'
+                        'exit - завершить программу.\n'
+                        'update - обновить вакансии.\n'
                         'all_vacancies - получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию.\n'
-                        'get_companies - получает список всех компаний и количество вакансий у каждой компании\n'
+                        'get_companies - получает список всех компаний и количество вакансий у каждой компании.\n'
+                        'average_salary - получает среднюю зарплату по вакансиям.\n'
+                        'higher_salary - получает список всех вакансий, у которых зарплата выше средней по всем вакансиям.\n'
+                        'vacancies_keyword - получает список всех вакансий, в названии которых содержатся переданные в метод слова, например “python”.\n'
                         'Введите команду:')
 
 if __name__ == '__main__':

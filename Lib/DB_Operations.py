@@ -45,15 +45,18 @@ class DB_Operations:
         self.host: str = db_config['host']
         self.port: str = db_config['port']
 
-    def sql_request(self, sql_request: str = '', write_file: bool = False) -> list:
+    def sql_request(self, sql_request: str = '', write_file: bool = False, get_results: bool = False) -> list:
         """ Выполняет SQL запрос """
+        # Список для возврата результатов
+        sql_request_result: list = []
         # Соединение с БД
         with psycopg2.connect(dbname=self.db_name, user=self.user, password=self.password, host=self.host, port=self.port) as connection:
             # Создание курсора
             with connection.cursor() as cursor:
                 # Отправка запроса в БД, если подразумевается ответ, получает его в переменную
                 cursor.execute(sql_request)
-                sql_request_result: list = cursor.fetchall()
+                if get_results:
+                    sql_request_result = cursor.fetchall()
         connection.close()
         # Запись запроса в фаил
         if write_file:
@@ -148,7 +151,7 @@ class DB_Operations:
                               vd.url
                               FROM vacancies_data as vd
                               JOIN employers_data as ed ON ed.employer_id = vd.employer_id;"""
-        table_list: list = self.sql_request(sql_request=sql_request)
+        table_list: list = self.sql_request(sql_request=sql_request, get_results=True)
         print("-----------------------------------------------------------------------------------------------------")
         for line in table_list:
             print(f"Работадатель: {line[0]}")
@@ -164,10 +167,58 @@ class DB_Operations:
                               JOIN vacancies_data ON employers_data.employer_id = vacancies_data.employer_id
                               GROUP BY employers_data.name_company
                               ORDER BY vacancy_count DESC;"""
-        table_list: list = self.sql_request(sql_request=sql_request)
+        table_list: list = self.sql_request(sql_request=sql_request, get_results=True)
         print("-----------------------------------------------------------------------------------------------------")
         for line in table_list:
             print(f"Работадатель: {line[0]}")
             print(f"Вакансий: {line[1]}")
+            print(
+                "-----------------------------------------------------------------------------------------------------")
+
+    def get_avg_salary(self):
+        """  Получает среднюю зарплату по вакансиям. """
+        sql_request: str = """SELECT v.vacancy_name, AVG((v.salary_from + v.salary_to) / 2) AS avg_salary, v.url
+                              FROM vacancies_data v
+                              JOIN employers_data e ON v.employer_id = e.employer_id
+                              GROUP BY v.vacancy_name, v.url;"""
+        table_list: list = self.sql_request(sql_request=sql_request, get_results=True)
+        print("-----------------------------------------------------------------------------------------------------")
+        for line in table_list:
+            print(f"Вакансия: {line[0]}")
+            print(f"Зарплата: {int(line[1])}")
+            print(f"Ссылка: {line[2]}")
+            print(
+                "-----------------------------------------------------------------------------------------------------")
+
+    def get_vacancies_with_higher_salary(self):
+        """ Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям. """
+        sql_request: str = """SELECT vacancy_name, salary_from, url
+                              FROM vacancies_data
+                              WHERE salary_from > (
+                                  SELECT AVG(salary_from)
+                                  FROM vacancies_data
+                              );"""
+        table_list: list = self.sql_request(sql_request=sql_request, get_results=True)
+        print("-----------------------------------------------------------------------------------------------------")
+        for line in table_list:
+            print(f"Вакансия: {line[0]}")
+            print(f"Зарплата: {int(line[1])}")
+            print(f"Ссылка: {line[2]}")
+            print(
+                "-----------------------------------------------------------------------------------------------------")
+
+    def get_vacancies_with_keyword(self, word: str = ''):
+        """ Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например “python”. """
+        sql_request: str = f"""SELECT v.vacancy_name, v.salary_from, e.name_company, v.url
+                               FROM vacancies_data v
+                               JOIN employers_data e ON v.employer_id = e.employer_id
+                               WHERE v.vacancy_name LIKE '%{word}%';"""
+        table_list: list = self.sql_request(sql_request=sql_request, get_results=True)
+        print("-----------------------------------------------------------------------------------------------------")
+        for line in table_list:
+            print(f"Вакансия: {line[0]}")
+            print(f"Зарплата: {int(line[1])}")
+            print(f"Работадатель: {line[2]}")
+            print(f"Ссылка: {line[3]}")
             print(
                 "-----------------------------------------------------------------------------------------------------")
