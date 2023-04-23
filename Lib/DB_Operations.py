@@ -175,7 +175,7 @@ class DB_Operations:
             print(
                 "-----------------------------------------------------------------------------------------------------")
 
-    def get_avg_salary(self):
+    def get_avg_salary(self) -> None:
         """  Получает среднюю зарплату по вакансиям. """
         sql_request: str = """SELECT v.vacancy_name, AVG((v.salary_from + v.salary_to) / 2) AS avg_salary, v.url
                               FROM vacancies_data v
@@ -190,7 +190,7 @@ class DB_Operations:
             print(
                 "-----------------------------------------------------------------------------------------------------")
 
-    def get_vacancies_with_higher_salary(self):
+    def get_vacancies_with_higher_salary(self) -> None:
         """ Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям. """
         sql_request: str = """SELECT vacancy_name, salary_from, url
                               FROM vacancies_data
@@ -207,7 +207,7 @@ class DB_Operations:
             print(
                 "-----------------------------------------------------------------------------------------------------")
 
-    def get_vacancies_with_keyword(self, word: str = ''):
+    def get_vacancies_with_keyword(self, word: str = '') -> None:
         """ Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например “python”. """
         sql_request: str = f"""SELECT v.vacancy_name, v.salary_from, e.name_company, v.url
                                FROM vacancies_data v
